@@ -1,0 +1,102 @@
+{
+  "qr_lookup": {
+    "status": "success",
+    "data": {
+      "batch_number": "BATCH001",
+      "name": "Paracetamol 500mg",
+      "manufacturer": "TraceMed Pharma",
+      "expiration_date": "2027-12-31",
+      "status": "Inspected",
+      "location": "Factory A",
+      "temperature": 24.5,
+      "humidity": 58.0,
+      "blockchain_hash": "",
+      "medicine_code": "MED001",
+      "generic_name": "Paracetamol",
+      "dosage_form": "Tablet",
+      "strength": "500mg",
+      "category": "Pain reliever",
+      "manufacture_date": "2026-01-15",
+      "storage_condition": "Store below 30C",
+      "quality_status": "Passed"
+    }
+  },
+  "batch_history": {
+    "status": "success",
+    "data": {
+      "medicine": {
+        "_id": "665f1f77bcf86cd799439011",
+        "name": "Paracetamol 500mg",
+        "manufacturer": "TraceMed Pharma",
+        "batch_number": "BATCH001",
+        "expiration_date": "2027-12-31",
+        "description": "Pain reliever and fever reducer.",
+        "location": "Factory A",
+        "status": "Inspected",
+        "temperature": 24.5,
+        "humidity": 58.0,
+        "blockchain_hash": "",
+        "medicine_code": "MED001",
+        "generic_name": "Paracetamol",
+        "dosage_form": "Tablet",
+        "strength": "500mg",
+        "category": "Pain reliever",
+        "manufacture_date": "2026-01-15",
+        "storage_condition": "Store below 30C",
+        "quality_status": "Passed"
+      },
+      "history": [
+        {
+          "_id": "665f1f77bcf86cd799439099",
+          "medicine_id": "665f1f77bcf86cd799439011",
+          "batch_number": "BATCH001",
+          "medicine_name": "Paracetamol 500mg",
+          "location": "Quality Lab 1",
+          "status": "Inspected",
+          "temperature": 23.8,
+          "humidity": 57.0,
+          "blockchain_hash": "",
+          "note": "Quality inspection passed."
+        }
+      ]
+    }
+  },
+  "create_record": {
+    "status": "success",
+    "message": "Record added successfully",
+    "data": {
+      "id": "665f1f77bcf86cd799439099"
+    }
+  },
+  "login": {
+    "status": "success",
+    "message": "Login successful",
+    "data": {
+      "access": "<jwt-access-token>",
+      "refresh": "<jwt-refresh-token>",
+      "user": {
+        "id": 1,
+        "username": "manufacturer",
+        "email": "manufacturer@tracemed.local",
+        "roles": [
+          "manufacturer"
+        ],
+        "is_staff": false,
+        "is_superuser": false
+      }
+    }
+  },
+  "me": {
+    "status": "success",
+    "data": {
+      "id": 1,
+      "username": "manufacturer",
+      "email": "manufacturer@tracemed.local",
+      "roles": [
+        "manufacturer"
+      ],
+      "is_staff": false,
+      "is_superuser": false
+    }
+  }
+}

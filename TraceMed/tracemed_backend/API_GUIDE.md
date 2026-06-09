@@ -1,146 +1,342 @@
-# TraceMed API Guide
+# TraceMed Backend API Guide
 
-## MongoDB CRUD Operations
+Base URL for local development:
 
-### 1. Insert (Thêm dữ liệu)
-```python
-from medicine.models import insert_medicine
+```text
+http://localhost:8000
+```
 
-medicine_data = {
-    "name": "Paracetamol 500mg",
-    "manufacturer": "Pharma Corp",
-    "batch_number": "BATCH001",
-    "expiration_date": "2025-05-28",
-    "location": "Warehouse A",
-    "temperature": 25.5,
-    "humidity": 60.0
+Frontend origin allowed by default:
+
+```text
+http://localhost:3000
+```
+
+QR lookup is public and uses `batch_number`.
+
+Write APIs require JWT authentication. QR lookup remains public read-only.
+
+## Response Format
+
+Success:
+
+```json
+{
+  "status": "success",
+  "message": "Optional message",
+  "count": 1,
+  "data": {}
 }
-
-medicine_id = insert_medicine(medicine_data)
-print(f"Inserted ID: {medicine_id}")
 ```
 
-### 2. Find One (Lấy một dữ liệu)
-```python
-from medicine.models import find_one_medicine
+Error:
 
-medicine = find_one_medicine({"name": "Paracetamol 500mg"})
-print(medicine)
+```json
+{
+  "status": "error",
+  "message": "Human-readable error",
+  "errors": {}
+}
 ```
 
-### 3. Find All (Lấy tất cả dữ liệu)
-```python
-from medicine.models import find_medicine
+## Status Values
 
-all_medicines = find_medicine()
-# Với điều kiện
-medicines = find_medicine({"manufacturer": "Pharma Corp"})
+Use one of these values for medicine and history records:
+
+```text
+Created
+Produced
+Inspected
+InTransit
+Delivered
+Sold
+Recalled
 ```
 
-### 4. Update (Cập nhật dữ liệu)
-```python
-from medicine.models import update_medicine
+## Public Endpoints
 
-updated_count = update_medicine(
-    {"name": "Paracetamol 500mg"},
-    {"location": "Warehouse B", "temperature": 22.0}
-)
-print(f"Updated: {updated_count}")
+### Health Check
+
+```http
+GET /
 ```
 
-### 5. Delete (Xóa dữ liệu)
-```python
-from medicine.models import delete_medicine
+Response:
 
-deleted_count = delete_medicine({"name": "Paracetamol 500mg"})
-print(f"Deleted: {deleted_count}")
+```text
+TraceMed medicine app is working
 ```
 
----
+### QR Lookup
 
-## REST API Endpoints
+```http
+GET /api/batches/<batch_number>/qr/
+```
 
-### Medicine Management
-- **GET `/api/medicines/`** - Lấy danh sách tất cả thuốc
-- **POST `/api/medicines/`** - Thêm thuốc mới
-- **GET `/api/medicines/<id>/`** - Lấy chi tiết một thuốc
-- **PUT `/api/medicines/<id>/`** - Cập nhật thông tin thuốc
-- **DELETE `/api/medicines/<id>/`** - Xóa thuốc
+Example:
 
-### Supply Chain Tracking
-- **GET `/api/records/`** - Lấy tất cả lịch sử vận chuyển
-- **POST `/api/records/`** - Thêm bản ghi vận chuyển mới
-- **GET `/api/records/<medicine_id>/`** - Lấy lịch sử của một thuốc
-
-### Search
-- **GET `/api/search/?q=paracetamol`** - Tìm kiếm theo tên hoặc batch number
-
----
-
-## Example Requests
-
-### 1. Create Medicine
 ```bash
-curl -X POST http://localhost:8000/api/medicines/ \
-  -H "Content-Type: application/json" \
-  -d '{
-    "name": "Ibuprofen 400mg",
-    "manufacturer": "HealthCorp",
-    "batch_number": "BATCH002",
-    "expiration_date": "2025-12-31",
-    "description": "Anti-inflammatory medication",
-    "location": "Warehouse A"
-  }'
+curl http://localhost:8000/api/batches/BATCH001/qr/
 ```
 
-### 2. Get All Medicines
+Response:
+
+```json
+{
+  "status": "success",
+  "data": {
+    "batch_number": "BATCH001",
+    "name": "Paracetamol 500mg",
+    "manufacturer": "TraceMed Pharma",
+    "expiration_date": "2027-12-31",
+    "status": "Inspected",
+    "location": "Factory A",
+    "temperature": 24.5,
+    "humidity": 58.0,
+    "blockchain_hash": ""
+  }
+}
+```
+
+## Auth APIs
+
+### Login
+
+```http
+POST /api/auth/login/
+Content-Type: application/json
+```
+
+Body:
+
+```json
+{
+  "username": "manufacturer",
+  "password": "manufacturer123"
+}
+```
+
+Response:
+
+```json
+{
+  "status": "success",
+  "message": "Login successful",
+  "data": {
+    "access": "<jwt-access-token>",
+    "refresh": "<jwt-refresh-token>",
+    "user": {
+      "id": 1,
+      "username": "manufacturer",
+      "email": "manufacturer@tracemed.local",
+      "roles": ["manufacturer"],
+      "is_staff": false,
+      "is_superuser": false
+    }
+  }
+}
+```
+
+### Refresh Access Token
+
+```http
+POST /api/auth/refresh/
+Content-Type: application/json
+```
+
+Body:
+
+```json
+{
+  "refresh": "<jwt-refresh-token>"
+}
+```
+
+### Current User
+
+```http
+GET /api/auth/me/
+Authorization: Bearer <jwt-access-token>
+```
+
+## Medicine APIs
+
+### List Medicines
+
+```http
+GET /api/medicines/
+```
+
+### Create Medicine
+
+```http
+POST /api/medicines/
+Content-Type: application/json
+Authorization: Bearer <jwt-access-token>
+```
+
+Body:
+
+```json
+{
+  "name": "Ibuprofen 400mg",
+  "manufacturer": "HealthCorp",
+  "batch_number": "BATCH003",
+  "expiration_date": "2028-01-31",
+  "description": "Anti-inflammatory medicine.",
+  "location": "Factory C",
+  "status": "Created",
+  "temperature": 24.0,
+  "humidity": 60.0
+}
+```
+
+Response:
+
+```json
+{
+  "status": "success",
+  "message": "Medicine added successfully",
+  "data": {
+    "id": "665f1f77bcf86cd799439011"
+  }
+}
+```
+
+If `batch_number` already exists, backend returns `409 Conflict`.
+
+### Medicine Detail
+
+```http
+GET /api/medicines/<medicine_id>/
+PUT /api/medicines/<medicine_id>/
+DELETE /api/medicines/<medicine_id>/
+```
+
+`PUT` returns success even when the submitted data matches the current document.
+
+### Search Medicines
+
+```http
+GET /api/search/?q=<keyword>
+```
+
+Searches by `name` and `batch_number`.
+
+## Supply Chain History APIs
+
+### List Records
+
+```http
+GET /api/records/
+```
+
+### Create Record
+
+```http
+POST /api/records/
+Content-Type: application/json
+Authorization: Bearer <jwt-access-token>
+```
+
+Body:
+
+```json
+{
+  "batch_number": "BATCH001",
+  "location": "Warehouse A",
+  "status": "Delivered",
+  "temperature": 24.0,
+  "humidity": 60.0,
+  "note": "Received by warehouse."
+}
+```
+
+Backend requires `batch_number` to exist in medicines before creating a history record. If `medicine_id` is omitted, backend resolves it from `batch_number`.
+
+### Records By Medicine ID
+
+```http
+GET /api/records/<medicine_id>/
+```
+
+### Batch History
+
+```http
+GET /api/batches/<batch_number>/history/
+```
+
+Response:
+
+```json
+{
+  "status": "success",
+  "data": {
+    "medicine": {
+      "_id": "665f1f77bcf86cd799439011",
+      "name": "Paracetamol 500mg",
+      "manufacturer": "TraceMed Pharma",
+      "batch_number": "BATCH001",
+      "expiration_date": "2027-12-31",
+      "status": "Inspected"
+    },
+    "history": [
+      {
+        "_id": "665f1f77bcf86cd799439099",
+        "medicine_id": "665f1f77bcf86cd799439011",
+        "batch_number": "BATCH001",
+        "medicine_name": "Paracetamol 500mg",
+        "location": "Quality Lab 1",
+        "status": "Inspected",
+        "temperature": 23.8,
+        "humidity": 57.0,
+        "note": "Quality inspection passed."
+      }
+    ]
+  }
+}
+```
+
+## Demo Data
+
+Create demo auth roles and users:
+
 ```bash
-curl http://localhost:8000/api/medicines/
+python manage.py seed_auth_roles
 ```
 
-### 3. Update Medicine
+Demo users:
+
+```text
+admin / admin123
+regulator / regulator123
+manufacturer / manufacturer123
+inspector / inspector123
+logistics / logistics123
+pharmacy / pharmacy123
+```
+
+Start MongoDB local before seeding medicine data, then run:
+
 ```bash
-curl -X PUT http://localhost:8000/api/medicines/507f1f77bcf86cd799439011/ \
-  -H "Content-Type: application/json" \
-  -d '{
-    "location": "Warehouse C",
-    "temperature": 20.0
-  }'
+python manage.py seed_demo_data
 ```
 
-### 4. Delete Medicine
+The seed command creates demo batches `BATCH001` and `BATCH002` with supply-chain history.
+
+To seed the full 20-medicine dataset from the team:
+
 ```bash
-curl -X DELETE http://localhost:8000/api/medicines/507f1f77bcf86cd799439011/
+python manage.py seed_medicines
 ```
 
-### 5. Search
-```bash
-curl "http://localhost:8000/api/search/?q=Paracetamol"
-```
+This command skips existing `batch_number` values, so it is safe to run more than once.
 
----
+## Frontend Notes
 
-## Running the Test
-```bash
-python manage.py shell
->>> exec(open('test_mongodb_crud.py').read())
-```
-
-Or directly:
-```bash
-python test_mongodb_crud.py
-```
-
----
-
-## Settings Configuration
-Check `.env` for MongoDB URI:
-```
-MONGO_URI=mongodb+srv://username:password@cluster.mongodb.net/tracemed?retryWrites=true&w=majority
-MONGO_DB_NAME=tracemed
-```
-
-## Error Handling
-- Connection timeout: 5 seconds (configurable in models.py)
-- Retry writes: Enabled
-- Returns `None` on errors with console logging
+- Use `batch_number` for QR routes, for example `/qr/BATCH001`.
+- The frontend should call `GET /api/batches/BATCH001/qr/` for public QR display.
+- Send `Authorization: Bearer <access_token>` for write APIs.
+- `manufacturer`, `regulator`, and `admin` can create/update/delete medicines.
+- All configured roles can create medicine history records.
+- Do not call MongoDB directly from frontend.

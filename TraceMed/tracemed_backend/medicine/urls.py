@@ -1,8 +1,14 @@
 from django.urls import path
 from . import views
+from . import auth_views
 
 urlpatterns = [
     path('', views.index, name='index'),
+
+    # Auth endpoints
+    path('api/auth/login/', auth_views.login_view, name='auth_login'),
+    path('api/auth/refresh/', auth_views.refresh_view, name='auth_refresh'),
+    path('api/auth/me/', auth_views.me_view, name='auth_me'),
     
     # Medicine CRUD endpoints
     path('api/medicines/', views.medicine_list, name='medicine_list'),

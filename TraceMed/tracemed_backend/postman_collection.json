@@ -1,0 +1,161 @@
+{
+  "info": {
+    "name": "TraceMed Backend API",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://localhost:8000"
+    },
+    {
+      "key": "medicine_id",
+      "value": "665f1f77bcf86cd799439011"
+    },
+    {
+      "key": "batch_number",
+      "value": "BATCH001"
+    },
+    {
+      "key": "access_token",
+      "value": ""
+    },
+    {
+      "key": "refresh_token",
+      "value": ""
+    }
+  ],
+  "item": [
+    {
+      "name": "Health Check",
+      "request": {
+        "method": "GET",
+        "url": "{{base_url}}/"
+      }
+    },
+    {
+      "name": "Login",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"username\": \"manufacturer\",\n  \"password\": \"manufacturer123\"\n}"
+        },
+        "url": "{{base_url}}/api/auth/login/"
+      }
+    },
+    {
+      "name": "Refresh Token",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"refresh\": \"{{refresh_token}}\"\n}"
+        },
+        "url": "{{base_url}}/api/auth/refresh/"
+      }
+    },
+    {
+      "name": "Me",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{access_token}}"
+          }
+        ],
+        "url": "{{base_url}}/api/auth/me/"
+      }
+    },
+    {
+      "name": "List Medicines",
+      "request": {
+        "method": "GET",
+        "url": "{{base_url}}/api/medicines/"
+      }
+    },
+    {
+      "name": "Create Medicine",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{access_token}}"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"name\": \"Ibuprofen 400mg\",\n  \"manufacturer\": \"HealthCorp\",\n  \"batch_number\": \"BATCH003\",\n  \"expiration_date\": \"2028-01-31\",\n  \"description\": \"Anti-inflammatory medicine.\",\n  \"location\": \"Factory C\",\n  \"status\": \"Created\",\n  \"temperature\": 24.0,\n  \"humidity\": 60.0\n}"
+        },
+        "url": "{{base_url}}/api/medicines/"
+      }
+    },
+    {
+      "name": "QR Lookup",
+      "request": {
+        "method": "GET",
+        "url": "{{base_url}}/api/batches/{{batch_number}}/qr/"
+      }
+    },
+    {
+      "name": "Batch History",
+      "request": {
+        "method": "GET",
+        "url": "{{base_url}}/api/batches/{{batch_number}}/history/"
+      }
+    },
+    {
+      "name": "List Records",
+      "request": {
+        "method": "GET",
+        "url": "{{base_url}}/api/records/"
+      }
+    },
+    {
+      "name": "Create Record",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{access_token}}"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"batch_number\": \"BATCH001\",\n  \"location\": \"Warehouse A\",\n  \"status\": \"Delivered\",\n  \"temperature\": 24.0,\n  \"humidity\": 60.0,\n  \"note\": \"Received by warehouse.\"\n}"
+        },
+        "url": "{{base_url}}/api/records/"
+      }
+    },
+    {
+      "name": "Search Medicines",
+      "request": {
+        "method": "GET",
+        "url": "{{base_url}}/api/search/?q=para"
+      }
+    }
+  ]
+}
