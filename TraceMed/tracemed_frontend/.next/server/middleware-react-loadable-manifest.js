@@ -1,0 +1,1 @@
+self.__REACT_LOADABLE_MANIFEST="{\"app/page.tsx -> jsqr\":{\"id\":\"app/page.tsx -> jsqr\",\"files\":[\"static/chunks/_app-pages-browser_node_modules_jsqr_dist_jsQR_js.js\"]}}"
