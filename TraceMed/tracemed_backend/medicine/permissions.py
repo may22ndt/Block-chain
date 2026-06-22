@@ -20,3 +20,10 @@ class RecordWritePermission(BasePermission):
         if request.method in SAFE_METHODS:
             return True
         return request.user.is_authenticated and user_has_role(request.user, WRITE_RECORD_ROLES)
+
+
+class AdminOnlyPermission(BasePermission):
+    message = "Only admin users can perform this action."
+
+    def has_permission(self, request, view):
+        return request.user.is_authenticated and user_has_role(request.user, ["admin"])

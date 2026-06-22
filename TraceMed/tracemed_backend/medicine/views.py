@@ -253,14 +253,23 @@ def batch_qr(request, batch_number):
         return error_response("Batch not found", status_code=status.HTTP_404_NOT_FOUND)
 
     return success_response({
+        "medicine_code": medicine.get("medicine_code"),
         "batch_number": medicine.get("batch_number"),
         "name": medicine.get("name"),
+        "generic_name": medicine.get("generic_name"),
+        "dosage_form": medicine.get("dosage_form"),
+        "strength": medicine.get("strength"),
+        "category": medicine.get("category"),
         "manufacturer": medicine.get("manufacturer"),
+        "manufacture_date": medicine.get("manufacture_date"),
         "expiration_date": medicine.get("expiration_date"),
+        "storage_condition": medicine.get("storage_condition"),
+        "quality_status": medicine.get("quality_status"),
         "status": medicine.get("status", DEFAULT_MEDICINE_STATUS),
         "location": medicine.get("location"),
         "temperature": medicine.get("temperature"),
         "humidity": medicine.get("humidity"),
         "blockchain_hash": medicine.get("blockchain_hash"),
         "blockchain_lot_id": medicine.get("blockchain_lot_id"),
+        "blockchain_sync_status": medicine.get("blockchain_sync_status", "disabled"),
     })

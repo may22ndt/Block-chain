@@ -6,6 +6,7 @@ MEDICINE_STATUSES = (
     "Delivered",
     "Sold",
     "Recalled",
+    "Cancelled",
 )
 
 DEFAULT_MEDICINE_STATUS = "Created"

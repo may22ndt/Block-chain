@@ -329,6 +329,77 @@ class BlockchainService:
     def get_stage_text(self, contract_lothuoc_id):
         return self.get_batch(contract_lothuoc_id)["stage_text"]
 
+    # --- Role management (owner only) ---
+
+    ROLE_ADD_FUNCTIONS = {
+        "manufacturer": "themNhaSanXuat",
+        "inspector": "themDonViKiemDinh",
+        "logistics": "themDonViVanChuyen",
+        "pharmacy": "themNhaThuoc",
+    }
+    ROLE_REVOKE_FUNCTIONS = {
+        "manufacturer": "thuHoiRoleNhaSanXuat",
+        "inspector": "thuHoiRoleDonViKiemDinh",
+        "logistics": "thuHoiRoleDonViVanChuyen",
+        "pharmacy": "thuHoiRoleNhaThuoc",
+    }
+    ROLE_ACTIVATE_FUNCTIONS = {
+        "manufacturer": "kichHoatLaiRoleNhaSanXuat",
+        "inspector": "kichHoatLaiRoleDonViKiemDinh",
+        "logistics": "kichHoatLaiRoleDonViVanChuyen",
+        "pharmacy": "kichHoatLaiRoleNhaThuoc",
+    }
+
+    def _validate_role(self, role):
+        if role not in self.ROLE_ADD_FUNCTIONS:
+            raise BlockchainConfigError(
+                f"Invalid role '{role}'. Must be one of: {', '.join(self.ROLE_ADD_FUNCTIONS)}"
+            )
+
+    def add_role(self, role, wallet):
+        self._validate_role(role)
+        contract = self.get_contract()
+        checksum_wallet = Web3.to_checksum_address(wallet)
+        fn_name = self.ROLE_ADD_FUNCTIONS[role]
+        fn = getattr(contract.functions, fn_name)(checksum_wallet)
+        receipt = self.send_transaction(fn, role="admin")
+        return {
+            "tx_hash": receipt.transactionHash.hex(),
+            "block_number": receipt.blockNumber,
+            "status": "success",
+            "role": role,
+            "wallet": checksum_wallet,
+        }
+
+    def revoke_role(self, role, role_id, reason=""):
+        self._validate_role(role)
+        contract = self.get_contract()
+        effective_reason = reason if len(str(reason or "")) >= 5 else "Role revoked by admin"
+        fn_name = self.ROLE_REVOKE_FUNCTIONS[role]
+        fn = getattr(contract.functions, fn_name)(int(role_id), effective_reason)
+        receipt = self.send_transaction(fn, role="admin")
+        return {
+            "tx_hash": receipt.transactionHash.hex(),
+            "block_number": receipt.blockNumber,
+            "status": "success",
+            "role": role,
+            "role_id": int(role_id),
+        }
+
+    def activate_role(self, role, role_id):
+        self._validate_role(role)
+        contract = self.get_contract()
+        fn_name = self.ROLE_ACTIVATE_FUNCTIONS[role]
+        fn = getattr(contract.functions, fn_name)(int(role_id))
+        receipt = self.send_transaction(fn, role="admin")
+        return {
+            "tx_hash": receipt.transactionHash.hex(),
+            "block_number": receipt.blockNumber,
+            "status": "success",
+            "role": role,
+            "role_id": int(role_id),
+        }
+
     def get_history(self, contract_lothuoc_id, from_block=0, to_block="latest"):
         contract = self.get_contract()
         events = contract.events.CapNhatTrangThai().get_logs(
@@ -527,3 +598,15 @@ def send_to_blockchain(payload):
     if not is_blockchain_enabled():
         return {"status": "disabled", "payload": payload}
     return create_lot_on_chain(payload)
+
+
+def add_role(role, wallet):
+    return BlockchainService().add_role(role, wallet)
+
+
+def revoke_role(role, role_id, reason=""):
+    return BlockchainService().revoke_role(role, role_id, reason)
+
+
+def activate_role(role, role_id):
+    return BlockchainService().activate_role(role, role_id)
