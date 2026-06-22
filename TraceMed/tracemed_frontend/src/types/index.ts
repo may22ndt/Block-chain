@@ -27,6 +27,12 @@ export interface User {
   is_superuser: boolean;
 }
 
+export interface UserDetail extends User {
+  is_active: boolean;
+  date_joined?: string;
+  last_login?: string;
+}
+
 export interface AuthTokens {
   access: string;
   refresh: string;

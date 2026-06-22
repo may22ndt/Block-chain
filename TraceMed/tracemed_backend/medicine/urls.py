@@ -2,6 +2,7 @@ from django.urls import path
 from . import views
 from . import auth_views
 from . import blockchain_views
+from . import admin_views
 
 urlpatterns = [
     path('', views.index, name='index'),
@@ -36,4 +37,9 @@ urlpatterns = [
     path('api/blockchain/roles/add/', blockchain_views.blockchain_role_add, name='blockchain_role_add'),
     path('api/blockchain/roles/revoke/', blockchain_views.blockchain_role_revoke, name='blockchain_role_revoke'),
     path('api/blockchain/roles/activate/', blockchain_views.blockchain_role_activate, name='blockchain_role_activate'),
+
+    # Admin — user & role management (admin only)
+    path('api/admin/users/', admin_views.user_list, name='admin_user_list'),
+    path('api/admin/users/<int:user_id>/', admin_views.user_detail, name='admin_user_detail'),
+    path('api/admin/users/<int:user_id>/set-password/', admin_views.user_set_password, name='admin_user_set_password'),
 ]

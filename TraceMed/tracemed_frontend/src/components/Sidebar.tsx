@@ -14,12 +14,14 @@ import {
   Shield,
   User,
   Link2,
+  Users,
 } from "lucide-react";
 
 interface NavItem {
   label: string;
   href: string;
   icon: React.ReactNode;
+  adminOnly?: boolean;
 }
 
 const NAV_ITEMS: NavItem[] = [
@@ -43,12 +45,19 @@ const NAV_ITEMS: NavItem[] = [
     href: "/blockchain",
     icon: <Link2 className="w-5 h-5" />,
   },
+  {
+    label: "Users",
+    href: "/admin/users",
+    icon: <Users className="w-5 h-5" />,
+    adminOnly: true,
+  },
 ];
 
 export default function Sidebar() {
   const [collapsed, setCollapsed] = useState(false);
   const pathname = usePathname();
-  const { user, logout } = useAuth();
+  const { user, logout, hasRole } = useAuth();
+  const isAdmin = hasRole(["admin"]);
 
   return (
     <aside
@@ -70,7 +79,7 @@ export default function Sidebar() {
 
       {/* Nav Items */}
       <nav className="flex-1 px-2 py-4 space-y-1 overflow-y-auto">
-        {NAV_ITEMS.map((item) => {
+        {NAV_ITEMS.filter((item) => !item.adminOnly || isAdmin).map((item) => {
           const isActive =
             pathname === item.href || pathname.startsWith(item.href + "/");
           return (

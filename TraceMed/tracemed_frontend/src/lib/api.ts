@@ -5,6 +5,8 @@ import {
   BatchHistory,
   BatchQRData,
   User,
+  UserDetail,
+  UserRole,
   BlockchainStatusData,
   SyncAuditResult,
   BlockchainLotDetail,
@@ -261,5 +263,50 @@ export async function blockchainRoleActivateApi(
   return apiFetch<ApiResponse<BlockchainRoleResult>>("/api/blockchain/roles/activate/", {
     method: "POST",
     body: JSON.stringify({ role, id }),
+  });
+}
+
+// Admin — user & role management
+export async function getAdminUsersApi(): Promise<ApiResponse<UserDetail[]>> {
+  return apiFetch<ApiResponse<UserDetail[]>>("/api/admin/users/");
+}
+
+export async function createAdminUserApi(data: {
+  username: string;
+  password: string;
+  email?: string;
+  roles?: UserRole[];
+}): Promise<ApiResponse<UserDetail>> {
+  return apiFetch<ApiResponse<UserDetail>>("/api/admin/users/", {
+    method: "POST",
+    body: JSON.stringify(data),
+  });
+}
+
+export async function getAdminUserApi(id: number): Promise<ApiResponse<UserDetail>> {
+  return apiFetch<ApiResponse<UserDetail>>(`/api/admin/users/${id}/`);
+}
+
+export async function updateAdminUserApi(
+  id: number,
+  data: { roles?: UserRole[]; email?: string; is_active?: boolean }
+): Promise<ApiResponse<UserDetail>> {
+  return apiFetch<ApiResponse<UserDetail>>(`/api/admin/users/${id}/`, {
+    method: "PATCH",
+    body: JSON.stringify(data),
+  });
+}
+
+export async function deleteAdminUserApi(id: number): Promise<void> {
+  await apiFetch<void>(`/api/admin/users/${id}/`, { method: "DELETE" });
+}
+
+export async function setAdminUserPasswordApi(
+  id: number,
+  password: string
+): Promise<void> {
+  await apiFetch<void>(`/api/admin/users/${id}/set-password/`, {
+    method: "POST",
+    body: JSON.stringify({ password }),
   });
 }
