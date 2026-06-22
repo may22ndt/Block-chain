@@ -5,14 +5,6 @@ import { useRouter } from "next/navigation";
 import { useAuth } from "@/hooks/useAuth";
 import { Shield, Eye, EyeOff, LogIn, AlertCircle } from "lucide-react";
 
-const DEMO_CREDENTIALS = [
-  { username: "admin", password: "admin123", role: "Admin" },
-  { username: "manufacturer", password: "manufacturer123", role: "Manufacturer" },
-  { username: "inspector", password: "inspector123", role: "Inspector" },
-  { username: "logistics", password: "logistics123", role: "Logistics" },
-  { username: "pharmacy", password: "pharmacy123", role: "Pharmacy" },
-];
-
 export default function LoginPage() {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
@@ -46,12 +38,6 @@ export default function LoginPage() {
     } finally {
       setLoading(false);
     }
-  }
-
-  function fillDemo(cred: { username: string; password: string }) {
-    setUsername(cred.username);
-    setPassword(cred.password);
-    setError("");
   }
 
   if (isLoading) return null;
@@ -158,34 +144,6 @@ export default function LoginPage() {
           </div>
         </div>
 
-        {/* Demo Credentials */}
-        <div className="mt-6 bg-white/10 backdrop-blur-sm border border-white/20 rounded-2xl p-5">
-          <p className="text-sm font-semibold text-white mb-3">
-            Demo Credentials
-          </p>
-          <div className="space-y-2">
-            {DEMO_CREDENTIALS.map((cred) => (
-              <button
-                key={cred.username}
-                onClick={() => fillDemo(cred)}
-                className="w-full flex items-center justify-between px-3 py-2 bg-white/10 hover:bg-white/20 rounded-lg text-sm transition-colors text-left"
-              >
-                <div>
-                  <span className="text-white font-medium">{cred.username}</span>
-                  <span className="text-slate-300 ml-2 text-xs">
-                    / {cred.password}
-                  </span>
-                </div>
-                <span className="text-cyan-300 text-xs bg-cyan-500/20 px-2 py-0.5 rounded-full">
-                  {cred.role}
-                </span>
-              </button>
-            ))}
-          </div>
-          <p className="text-xs text-slate-400 mt-2">
-            Click to auto-fill credentials
-          </p>
-        </div>
       </div>
     </div>
   );
