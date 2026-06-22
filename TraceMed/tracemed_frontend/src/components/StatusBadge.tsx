@@ -53,6 +53,12 @@ const STATUS_CONFIG: Record<
     dot: "bg-red-500",
     label: "Recalled",
   },
+  Cancelled: {
+    bg: "bg-slate-100",
+    text: "text-slate-600",
+    dot: "bg-slate-400",
+    label: "Cancelled",
+  },
 };
 
 export default function StatusBadge({ status, size = "md" }: StatusBadgeProps) {

@@ -24,6 +24,7 @@ const ALL_STATUSES: MedicineStatus[] = [
   "Delivered",
   "Sold",
   "Recalled",
+  "Cancelled",
 ];
 
 const STATUS_COLORS: Record<MedicineStatus, string> = {
@@ -34,6 +35,7 @@ const STATUS_COLORS: Record<MedicineStatus, string> = {
   Delivered: "bg-green-500",
   Sold: "bg-emerald-500",
   Recalled: "bg-red-500",
+  Cancelled: "bg-slate-400",
 };
 
 function formatDate(dateStr?: string): string {
@@ -181,8 +183,8 @@ export default function DashboardPage() {
               ) : (
                 recentMedicines.map((med) => (
                   <Link
-                    key={med.id}
-                    href={`/medicines/${med.id}`}
+                    key={med._id}
+                    href={`/medicines/${med._id}`}
                     className="flex items-center gap-4 px-6 py-4 hover:bg-gray-50 transition-colors group"
                   >
                     <div className="w-9 h-9 rounded-xl bg-cyan-50 flex items-center justify-center flex-shrink-0">

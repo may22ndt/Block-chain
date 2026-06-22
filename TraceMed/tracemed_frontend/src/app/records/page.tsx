@@ -15,6 +15,7 @@ const ALL_STATUSES: MedicineStatus[] = [
   "Delivered",
   "Sold",
   "Recalled",
+  "Cancelled",
 ];
 
 function formatDate(dateStr?: string): string {
@@ -68,8 +69,8 @@ export default function RecordsPage() {
     : records;
 
   const sorted = [...filtered].sort((a, b) => {
-    const ta = new Date(a.created_at || 0).getTime();
-    const tb = new Date(b.created_at || 0).getTime();
+    const ta = new Date(a.timestamp || a.created_at || 0).getTime();
+    const tb = new Date(b.timestamp || b.created_at || 0).getTime();
     return tb - ta;
   });
 
@@ -217,7 +218,7 @@ export default function RecordsPage() {
                 ) : (
                   sorted.map((record) => (
                     <tr
-                      key={record.id}
+                      key={record._id}
                       className="hover:bg-gray-50 transition-colors"
                     >
                       <td className="px-5 py-3.5">
@@ -261,7 +262,7 @@ export default function RecordsPage() {
                       </td>
                       <td className="px-4 py-3.5">
                         <span className="text-xs text-slate-500">
-                          {formatDate(record.created_at)}
+                          {formatDate(record.timestamp || record.created_at)}
                         </span>
                       </td>
                     </tr>

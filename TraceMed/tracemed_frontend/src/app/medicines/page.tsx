@@ -38,7 +38,7 @@ function MedicinesContent() {
   const [error, setError] = useState("");
   const [searchQuery, setSearchQuery] = useState(initialQ);
   const [searchInput, setSearchInput] = useState(initialQ);
-  const [deletingId, setDeletingId] = useState<number | null>(null);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
   const [confirmDelete, setConfirmDelete] = useState<Medicine | null>(null);
 
   const canWrite = hasRole(WRITE_ROLES);
@@ -87,10 +87,10 @@ function MedicinesContent() {
   }
 
   async function handleDelete(medicine: Medicine) {
-    setDeletingId(medicine.id);
+    setDeletingId(medicine._id);
     try {
-      await deleteMedicineApi(medicine.id);
-      setMedicines((prev) => prev.filter((m) => m.id !== medicine.id));
+      await deleteMedicineApi(medicine._id);
+      setMedicines((prev) => prev.filter((m) => m._id !== medicine._id));
       setConfirmDelete(null);
     } catch (e: unknown) {
       const err = e as Error;
@@ -228,9 +228,9 @@ function MedicinesContent() {
                 ) : (
                   medicines.map((med) => (
                     <tr
-                      key={med.id}
+                      key={med._id}
                       className="hover:bg-gray-50 transition-colors cursor-pointer"
-                      onClick={() => router.push(`/medicines/${med.id}`)}
+                      onClick={() => router.push(`/medicines/${med._id}`)}
                     >
                       <td className="px-5 py-4">
                         <div className="flex items-center gap-3">
@@ -273,7 +273,7 @@ function MedicinesContent() {
                           onClick={(e) => e.stopPropagation()}
                         >
                           <Link
-                            href={`/medicines/${med.id}`}
+                            href={`/medicines/${med._id}`}
                             className="p-1.5 text-slate-400 hover:text-cyan-600 hover:bg-cyan-50 rounded-lg transition-colors"
                           >
                             <Eye className="w-4 h-4" />
@@ -321,10 +321,10 @@ function MedicinesContent() {
               </button>
               <button
                 onClick={() => handleDelete(confirmDelete)}
-                disabled={deletingId === confirmDelete.id}
+                disabled={deletingId === confirmDelete._id}
                 className="flex-1 py-2.5 bg-red-500 hover:bg-red-600 text-white rounded-xl text-sm font-medium transition-colors disabled:opacity-60"
               >
-                {deletingId === confirmDelete.id ? "Deleting..." : "Delete"}
+                {deletingId === confirmDelete._id ? "Deleting..." : "Delete"}
               </button>
             </div>
           </div>

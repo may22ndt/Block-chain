@@ -80,7 +80,7 @@ export default function Timeline({ records }: TimelineProps) {
         const icon = STATUS_ICON[record.status] || <Circle className="w-4 h-4" />;
 
         return (
-          <div key={record.id} className="flex gap-4">
+          <div key={record._id} className="flex gap-4">
             {/* Icon column */}
             <div className="flex flex-col items-center">
               <div

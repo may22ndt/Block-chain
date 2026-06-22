@@ -26,7 +26,7 @@ import {
   Package,
 } from "lucide-react";
 
-const STATUSES: MedicineStatus[] = [
+const ALL_STATUSES: MedicineStatus[] = [
   "Created",
   "Produced",
   "Inspected",
@@ -34,7 +34,25 @@ const STATUSES: MedicineStatus[] = [
   "Delivered",
   "Sold",
   "Recalled",
+  "Cancelled",
 ];
+
+// Per-role allowed statuses when blockchain is enabled (guides user to submit valid transitions)
+const ROLE_STATUSES: Partial<Record<string, MedicineStatus[]>> = {
+  manufacturer: ["Created", "Produced", "Cancelled"],
+  inspector: ["Inspected"],
+  logistics: ["InTransit", "Delivered"],
+  pharmacy: ["Delivered", "Sold"],
+};
+
+function getAllowedStatuses(roles: string[]): MedicineStatus[] {
+  if (roles.includes("admin") || roles.includes("regulator")) return ALL_STATUSES;
+  const allowed = new Set<MedicineStatus>();
+  for (const role of roles) {
+    for (const s of ROLE_STATUSES[role] ?? []) allowed.add(s);
+  }
+  return ALL_STATUSES.filter((s) => allowed.has(s));
+}
 
 function formatDate(dateStr?: string): string {
   if (!dateStr) return "—";
@@ -67,16 +85,22 @@ interface RecordFormData {
 
 function AddRecordModal({
   medicine,
+  allowedStatuses,
   onClose,
   onSuccess,
 }: {
   medicine: Medicine;
+  allowedStatuses: MedicineStatus[];
   onClose: () => void;
   onSuccess: (record: MedicineRecord) => void;
 }) {
+  const defaultStatus = allowedStatuses.includes(medicine.status)
+    ? medicine.status
+    : allowedStatuses[0] ?? medicine.status;
+
   const [form, setForm] = useState<RecordFormData>({
     location: "",
-    status: medicine.status,
+    status: defaultStatus,
     temperature: "",
     humidity: "",
     quality_status: "",
@@ -102,7 +126,7 @@ function AddRecordModal({
         batch_number: medicine.batch_number,
         location: form.location,
         status: form.status,
-        medicine: medicine.id,
+        medicine: medicine._id,
       };
       if (form.temperature) payload.temperature = parseFloat(form.temperature);
       if (form.humidity) payload.humidity = parseFloat(form.humidity);
@@ -133,9 +157,14 @@ function AddRecordModal({
           </button>
         </div>
 
-        <p className="text-xs text-slate-500 mb-4">
+        <p className="text-xs text-slate-500 mb-1">
           Medicine: <strong>{medicine.name}</strong> ({medicine.batch_number})
         </p>
+        {allowedStatuses.length < ALL_STATUSES.length && (
+          <p className="text-xs text-amber-600 mb-4">
+            Your role can only submit: {allowedStatuses.join(", ")}
+          </p>
+        )}
 
         {error && (
           <div className="mb-4 flex items-center gap-2 bg-red-50 border border-red-200 rounded-xl px-3 py-2.5 text-sm text-red-700">
@@ -160,7 +189,7 @@ function AddRecordModal({
             <div>
               <label className={labelClass}>Status</label>
               <select value={form.status} onChange={set("status")} className={inputClass}>
-                {STATUSES.map((s) => (
+                {allowedStatuses.map((s) => (
                   <option key={s} value={s}>{s}</option>
                 ))}
               </select>
@@ -246,7 +275,7 @@ function AddRecordModal({
 export default function MedicineDetailPage() {
   const { id } = useParams<{ id: string }>();
   const router = useRouter();
-  const { hasRole } = useAuth();
+  const { hasRole, user } = useAuth();
 
   const [medicine, setMedicine] = useState<Medicine | null>(null);
   const [records, setRecords] = useState<MedicineRecord[]>([]);
@@ -256,15 +285,15 @@ export default function MedicineDetailPage() {
 
   const canWrite = hasRole(WRITE_ROLES);
   const canAddRecord = hasRole(ALL_ROLES);
+  const allowedStatuses = getAllowedStatuses(user?.roles ?? []);
 
   async function fetchData() {
     setLoading(true);
     setError("");
     try {
-      const medId = parseInt(id, 10);
       const [medRes, recRes] = await Promise.all([
-        getMedicineApi(medId),
-        getRecordsByMedicineApi(medId),
+        getMedicineApi(id),
+        getRecordsByMedicineApi(id),
       ]);
       const med = (medRes.data || medRes) as Medicine;
       setMedicine(med);
@@ -534,6 +563,7 @@ export default function MedicineDetailPage() {
       {showAddRecord && (
         <AddRecordModal
           medicine={medicine}
+          allowedStatuses={allowedStatuses}
           onClose={() => setShowAddRecord(false)}
           onSuccess={handleRecordAdded}
         />

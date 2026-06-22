@@ -1,4 +1,16 @@
-import { ApiResponse, Medicine, MedicineRecord, BatchHistory, AuthTokens, User } from "@/types";
+import {
+  ApiResponse,
+  Medicine,
+  MedicineRecord,
+  BatchHistory,
+  BatchQRData,
+  User,
+  BlockchainStatusData,
+  SyncAuditResult,
+  BlockchainLotDetail,
+  BlockchainLotEvent,
+  BlockchainRoleResult,
+} from "@/types";
 
 const BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
 
@@ -114,7 +126,7 @@ export async function getMedicinesApi(): Promise<ApiResponse<Medicine[]>> {
   return apiFetch<ApiResponse<Medicine[]>>("/api/medicines/");
 }
 
-export async function getMedicineApi(id: number): Promise<ApiResponse<Medicine>> {
+export async function getMedicineApi(id: string): Promise<ApiResponse<Medicine>> {
   return apiFetch<ApiResponse<Medicine>>(`/api/medicines/${id}/`);
 }
 
@@ -128,7 +140,7 @@ export async function createMedicineApi(
 }
 
 export async function updateMedicineApi(
-  id: number,
+  id: string,
   data: Partial<Medicine>
 ): Promise<ApiResponse<Medicine>> {
   return apiFetch<ApiResponse<Medicine>>(`/api/medicines/${id}/`, {
@@ -137,7 +149,7 @@ export async function updateMedicineApi(
   });
 }
 
-export async function deleteMedicineApi(id: number): Promise<void> {
+export async function deleteMedicineApi(id: string): Promise<void> {
   await apiFetch<void>(`/api/medicines/${id}/`, { method: "DELETE" });
 }
 
@@ -153,7 +165,7 @@ export async function getRecordsApi(): Promise<ApiResponse<MedicineRecord[]>> {
 }
 
 export async function createRecordApi(
-  data: Partial<MedicineRecord>
+  data: Partial<MedicineRecord> & Record<string, unknown>
 ): Promise<ApiResponse<MedicineRecord>> {
   return apiFetch<ApiResponse<MedicineRecord>>("/api/records/", {
     method: "POST",
@@ -162,7 +174,7 @@ export async function createRecordApi(
 }
 
 export async function getRecordsByMedicineApi(
-  medicineId: number
+  medicineId: string
 ): Promise<ApiResponse<MedicineRecord[]>> {
   return apiFetch<ApiResponse<MedicineRecord[]>>(`/api/records/${medicineId}/`);
 }
@@ -171,15 +183,83 @@ export async function getRecordsByMedicineApi(
 export async function getBatchHistoryApi(
   batchNumber: string
 ): Promise<ApiResponse<BatchHistory>> {
-  return fetch(
-    `${BASE_URL}/api/batches/${encodeURIComponent(batchNumber)}/history/`
-  ).then((r) => r.json()) as Promise<ApiResponse<BatchHistory>>;
+  return apiFetch<ApiResponse<BatchHistory>>(
+    `/api/batches/${encodeURIComponent(batchNumber)}/history/`
+  );
 }
 
 export async function getBatchQRApi(
   batchNumber: string
-): Promise<ApiResponse<{ medicine: Medicine }>> {
-  return fetch(
-    `${BASE_URL}/api/batches/${encodeURIComponent(batchNumber)}/qr/`
-  ).then((r) => r.json()) as Promise<ApiResponse<{ medicine: Medicine }>>;
+): Promise<ApiResponse<BatchQRData>> {
+  return apiFetch<ApiResponse<BatchQRData>>(
+    `/api/batches/${encodeURIComponent(batchNumber)}/qr/`
+  );
+}
+
+// Blockchain status & audit
+export async function getBlockchainStatusApi(): Promise<ApiResponse<BlockchainStatusData>> {
+  return apiFetch<ApiResponse<BlockchainStatusData>>("/api/blockchain/status/");
+}
+
+export async function getBlockchainSyncAuditApi(params?: {
+  check_chain?: boolean;
+  only_problems?: boolean;
+}): Promise<ApiResponse<SyncAuditResult>> {
+  const qs = new URLSearchParams();
+  if (params?.check_chain !== undefined) qs.set("check_chain", String(params.check_chain));
+  if (params?.only_problems !== undefined) qs.set("only_problems", String(params.only_problems));
+  const query = qs.toString() ? `?${qs.toString()}` : "";
+  return apiFetch<ApiResponse<SyncAuditResult>>(`/api/blockchain/sync-audit/${query}`);
+}
+
+// Blockchain lot read
+export async function getBlockchainLotDetailApi(
+  lotId: number
+): Promise<ApiResponse<BlockchainLotDetail>> {
+  return apiFetch<ApiResponse<BlockchainLotDetail>>(`/api/blockchain/lots/${lotId}/`);
+}
+
+export async function getBlockchainLotHistoryApi(
+  lotId: number,
+  params?: { from_block?: number | string; to_block?: number | string }
+): Promise<ApiResponse<BlockchainLotEvent[]>> {
+  const qs = new URLSearchParams();
+  if (params?.from_block !== undefined) qs.set("from_block", String(params.from_block));
+  if (params?.to_block !== undefined) qs.set("to_block", String(params.to_block));
+  const query = qs.toString() ? `?${qs.toString()}` : "";
+  return apiFetch<ApiResponse<BlockchainLotEvent[]>>(
+    `/api/blockchain/lots/${lotId}/history/${query}`
+  );
+}
+
+// Blockchain role management (admin only)
+export async function blockchainRoleAddApi(
+  role: string,
+  wallet: string
+): Promise<ApiResponse<BlockchainRoleResult>> {
+  return apiFetch<ApiResponse<BlockchainRoleResult>>("/api/blockchain/roles/add/", {
+    method: "POST",
+    body: JSON.stringify({ role, wallet }),
+  });
+}
+
+export async function blockchainRoleRevokeApi(
+  role: string,
+  id: number,
+  reason?: string
+): Promise<ApiResponse<BlockchainRoleResult>> {
+  return apiFetch<ApiResponse<BlockchainRoleResult>>("/api/blockchain/roles/revoke/", {
+    method: "POST",
+    body: JSON.stringify({ role, id, reason }),
+  });
+}
+
+export async function blockchainRoleActivateApi(
+  role: string,
+  id: number
+): Promise<ApiResponse<BlockchainRoleResult>> {
+  return apiFetch<ApiResponse<BlockchainRoleResult>>("/api/blockchain/roles/activate/", {
+    method: "POST",
+    body: JSON.stringify({ role, id }),
+  });
 }
